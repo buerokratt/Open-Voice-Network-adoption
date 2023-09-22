@@ -1,0 +1,24 @@
+input_step:
+  assign:
+    params: ${incoming.body}
+
+validate_step:
+  switch:
+    - condition: ${incoming.headers["application-type"] == "ovon"}
+      next: translate_step
+  next: fail_step
+
+translate_step:
+  call: http.post
+  args:
+    url: http://ovon_pipelines:3010/ovonconvert
+    body: 
+      input: ${params}
+  result: convertedMessage
+
+return_step:
+  return: ${convertedMessage}
+  next: end
+
+fail_step:
+  return: ${incoming.body}
