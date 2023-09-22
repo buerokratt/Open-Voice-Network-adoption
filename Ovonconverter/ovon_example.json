@@ -1,0 +1,60 @@
+{
+    "ovon": {
+        "schema": {
+            "url": "https://ovon/conversation/pre-alpha-1.0.1",
+            "version": "1.0"      
+        },
+
+        "conversation": {
+            "id": "31050879662407560061859425913208"
+        }, 
+
+        "sender": {
+            "from": "https://example.com/message-from",
+            "reply-to": "https://example.com/reply-message-to"
+        },
+
+        "events": [
+            {
+                "event-type": "utterance",
+                "parameters": {
+                    "dialog-event": {
+                        "speaker-id": "mh8k907jjj",
+                        "span": { "start-time": "2023-06-14 02:06:07+00:00" },
+                        "features": {
+                            "text": {
+                                "mime-type": "text/plain",
+                                "tokens": [ { "value": "OK. I'll pass you over to pharmacy dot com."  } ]
+                            }
+                        }
+                    }
+                }
+            },
+
+            {
+                "event-type": "whisper-utterance",
+                "parameters": {    
+                    "dialog-event": {
+                        "speaker-id": "xxxxx",
+                        "span": { "start-time": "2023-06-14 02:06:07+00:00" },
+                        "features": {
+                            "text": {
+                                "mime-type": "text/plain",
+                                "tokens": [ { "value": "prescribe 180mg of citalopram"  } ]
+                            }
+                        }
+                    }
+                }
+            },
+            
+            { 
+                "event-type": "assistant-delegate",
+                "parameters": {
+                    "to": {
+                        "url": "https://mybot.pharmacy.com"
+                    }
+                }
+            }
+        ]
+    }
+}
