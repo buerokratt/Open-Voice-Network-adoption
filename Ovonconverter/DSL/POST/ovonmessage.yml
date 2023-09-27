@@ -1,24 +1,42 @@
 input_step:
   assign:
-    params: ${incoming.body}
+    input: ${incoming.body.input}
+    type: ${incoming.body.type}
 
 validate_step:
   switch:
-    - condition: ${incoming.headers["application-type"] == "ovon"}
+    - condition: ${type === "ovon"}
       next: translate_step
-  next: fail_step
+    - condition: ${type === "json"}
+      next: json_step
+  next: pass_step
 
 translate_step:
   call: http.post
   args:
-    url: http://ovon_pipelines:3010/ovonconvert
+    url: http://ovon_dmapper:3000/hbs/ovonconvert
     body: 
-      input: ${params}
+      inputvalue: ${input}
+    headers:
+      type: 'pass'
   result: convertedMessage
 
+translate_back_step:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/js/ovon-to-buerokratt
+    body: 
+      inputvalue: ${convertedMessage.response.body}
+  result: buerokrattMessage      
+
 return_step:
-  return: ${convertedMessage}
+  return: ${buerokrattMessage}
   next: end
 
-fail_step:
+json_step:
   return: ${incoming.body}
+  next: end
+
+pass_step:
+  return: ${input}
+  next: end
