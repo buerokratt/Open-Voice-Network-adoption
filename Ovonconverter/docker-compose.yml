@@ -13,14 +13,6 @@ services:
     ports:
       - 8080:8080
 
-#  pipelines:
-#    container_name: ovon_pipelines
-#    build:
-#      context: ./Pipelines
-#    ports:
-#      - 3010:3010
-#    networks:
-#      - converter
 
   datamapper:
     container_name: ovon_dmapper
