@@ -16,13 +16,14 @@ can be configured in environment variable PORT.
 
 #### POST /ovonmessage
 
-Request body: OVON message in JSON format.
+Request body: 
+	"input": OVON message in JSON format.
+	"type": "ovon" | "json" | "text"
 Headers: 
 	"Content-type": "application/json"
-	"Application-type": "application/ovon" for Ruuter to filter out OVON 
-	messages for conversion
+	
 
 ### Testing/demonstration html form
 
-Included is a html file `test_file.html` which send an AJAX request to Ruuter 
-to demonstrate the solution. 
+Included is a html file `test_message.html` which send an AJAX request to Ruuter to demonstrate the conversion of plaintext message to OVON JSON and that to Buerokratt JSON.
+
