@@ -1,4 +1,4 @@
-'{
+{
     "ovon": {
         "schema": {
             "url": "https://ovon/conversation/pre-alpha-1.0.1",
@@ -32,50 +32,24 @@
         },
 
         "events": [
-            {
-                "event-type": "utterance",
-                "parameters": {
-
-                    "dialog-event": {
-                        "speaker-id": "mh8k907jjj",
-                        "span": { "start-time": "2023-06-14 02:06:07+00:00" },
-                        "features": {
-                            "text": {
-                                "mime-type": "text/plain",
-                                "tokens": [ { "value": "OK. I'll pass you over to pharmacy dot com."  } ]
-                            }
-                        }
-                    }
-                }
-            },
             { 
                 "event-type": "assistant-delegate",
                 "parameters": {
                     "to": {
                         "url": "https://mybot.pharmacy.com"
                     },
-                    "whisper-dialog-event*": {
+                    "dialog-event": {
                         "speaker-id": "xxxxx",
                         "span": { "start-time": "2023-06-14 02:06:07+00:00" },
                         "features": {
                             "text": {
                                 "mime-type": "text/plain",
-                                "tokens": [ { "value": "{{input}}"  } ]
+                                "tokens": [ { "value": "{{inputvalue}}"  } ]
                             }
                         }
                     }
                 }
-            },
-            { 
-                "event-type": "utterance-forward",
-                "parameters": {
-                    "to": {
-                        "url": "https://example.com/DMR",
-                        "labels*": ""
-                    }
-                }
             }
-
         ]
     }
-}'
+}
