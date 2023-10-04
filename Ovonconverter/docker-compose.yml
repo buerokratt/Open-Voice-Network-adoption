@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  ruuter:
+    container_name: ovon_ruuter
+    image: ruuter-ruuter
+    environment:
+      - application.cors.allowedOrigins=*
+    volumes:
+      - ./DSL:/DSL
+    networks:
+      - converter
+    ports:
+      - 8080:8080
+
+
+  datamapper:
+    container_name: ovon_dmapper
+    build:
+      context: ./DataMapper
+    ports:
+      - 3000:3000
+    networks:
+      - converter
+
+networks:
+  converter:
+    driver: bridge
