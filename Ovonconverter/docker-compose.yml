@@ -3,7 +3,7 @@ version: '3.9'
 services:
   ruuter:
     container_name: ovon_ruuter
-    image: ruuter-ruuter
+    image: byk-ruuter-pub
     environment:
       - application.cors.allowedOrigins=*
     volumes:
