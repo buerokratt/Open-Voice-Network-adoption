@@ -11,8 +11,7 @@ services:
     networks:
       - converter
     ports:
-      - 8080:8080
-
+      - 8090:8080
 
   datamapper:
     container_name: ovon_dmapper
