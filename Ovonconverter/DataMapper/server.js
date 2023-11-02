@@ -4,6 +4,7 @@ import jsdom from "jsdom";
 const { JSDOM } = jsdom;
 import secrets from "./controllers/secrets.js";
 import fs from "fs";
+import mapper from "./controllers/mapper.js";
 import files from "./controllers/files.js";
 import crypto from "crypto";
 
@@ -18,6 +19,7 @@ import { generateHTMLTable } from "./js/convert/pdf.js";
 import * as helpers from "./lib/helpers.js";
 
 import ovonConvert from './lib/ovon.js';
+import stringSplit from "./js/util/stringSplit.js";
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -49,6 +51,8 @@ app.use(
 app.engine("handlebars", hbs.engine);
 app.set("view engine", "handlebars");
 app.set("views", "./views");
+app.use("/dmapper", mapper);
+app.use('/convert/string/split', stringSplit)
 app.use("/secrets", secrets);
 app.get("/", (req, res) => {
   res.render("home", { title: "Home" });

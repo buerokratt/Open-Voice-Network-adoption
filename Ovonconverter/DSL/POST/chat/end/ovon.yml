@@ -1,0 +1,61 @@
+assign_values:
+  assign:
+    request: ${incoming.body}
+    protocolVersion: ${incoming.headers.protocol}
+    cookie: ${incoming.headers.cookie}
+
+convertOvonToByk:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: ovonToBykV1
+  next: ovonToBykV1
+
+ovonToBykV1:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/ovonToByk-V1
+    body:
+      request: ${request}
+      eventType: "whisper"
+      type: 'end'
+      protocolVersion: ${incoming.headers.protocol}
+  result: bykRequest
+
+sendMessage:
+  call: http.post
+  args:
+    url: https://ruuter.dev.buerokratt.ee/pub1/end-chat
+    body:
+      message: ${bykRequest.response.body.data.message}
+    headers:
+      cookie: ${cookie}
+  result: bykResult
+
+convertMessageResponse:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
+    body:
+      id: ${request.ovon.conversation.id}
+      lastMessage: "Chat session is closed."
+  result: convertedResponse
+
+convertBykToOvon:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: bykToOvonV03
+  next: bykToOvonV03
+
+bykToOvonV03:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
+    body:
+      bykResponse: ${convertedResponse.response.body.data}
+      cookie: ${cookie}
+      eventType: 'end'
+  result: ovonResult
+
+returnSuccess:
+  return: ${ovonResult.response.body}
+  next: end

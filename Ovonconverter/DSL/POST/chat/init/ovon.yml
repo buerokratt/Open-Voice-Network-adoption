@@ -1,0 +1,61 @@
+assign_values:
+  assign:
+    request: ${incoming.body}
+    protocolVersion: ${incoming.headers.protocol}
+
+convertOvonToByk:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: ovonToBykV1
+  next: ovonToBykV1
+
+ovonToBykV1:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/ovonToByk-V1
+    body:
+      request: ${request}
+      type: "message"
+      eventType: "invite"
+      protocolVersion: ${incoming.headers.protocol}
+  result: bykRequest
+
+initChat:
+  call: http.post
+  args:
+    url: https://ruuter.dev.buerokratt.ee/pub1/init-chat
+    body:
+      message: ${bykRequest.response.body.data.message}
+      endUserTechnicalData: ${bykRequest.response.body.data.endUserTechnicalData}
+  result: bykResult
+  next: extractCookie
+
+extractCookie:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/convert/string/split
+    body:
+      data: ${bykResult.response.headers['Set-Cookie'][0]}
+      separator: ";"
+  result: extractedCookie
+  next: convertBykToOvon
+
+convertBykToOvon:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: bykToOvonV03
+  next: bykToOvonV03
+
+bykToOvonV03:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
+    body:
+      bykResponse: ${bykResult.response.body.data.get_inserted_chat}
+      cookie: ${extractedCookie.response.body[0]}
+      eventType: "init"
+  result: ovonResult
+
+returnSuccess:
+  return: ${ovonResult.response.body}
+  next: end
