@@ -2,6 +2,7 @@ assign_values:
   assign:
     request: ${incoming.body}
     protocolVersion: ${incoming.headers.protocol}
+    cookie: ${incoming.headers.cookie}
 
 convertOvonToByk:
   switch:
@@ -15,30 +16,29 @@ ovonToBykV1:
     url: http://ovon_dmapper:3000/dmapper/ovonToByk-V1
     body:
       request: ${request}
-      type: "message"
-      eventType: "invite"
+      eventType: "whisper"
+      type: 'end'
       protocolVersion: ${incoming.headers.protocol}
   result: bykRequest
 
-initChat:
+sendMessage:
   call: http.post
   args:
-    url: https://ruuter.dev.buerokratt.ee/pub1/init-chat
+    url: https://ruuter.dev.buerokratt.ee/pub1/end-chat
     body:
       message: ${bykRequest.response.body.data.message}
-      endUserTechnicalData: ${bykRequest.response.body.data.endUserTechnicalData}
+    headers:
+      cookie: ${cookie}
   result: bykResult
-  next: extractCookie
 
-extractCookie:
+convertMessageResponse:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/convert/string/split
+    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
     body:
-      data: ${bykResult.response.headers['Set-Cookie'][0]}
-      separator: ";"
-  result: extractedCookie
-  next: convertBykToOvon
+      id: ${request.ovon.conversation.id}
+      lastMessage: "Chat session is closed."
+  result: convertedResponse
 
 convertBykToOvon:
   switch:
@@ -51,9 +51,9 @@ bykToOvonV03:
   args:
     url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
     body:
-      bykResponse: ${bykResult.response.body.data.get_inserted_chat}
-      cookie: ${extractedCookie.response.body[0]}
-      eventType: "init"
+      bykResponse: ${convertedResponse.response.body.data}
+      cookie: ${cookie}
+      eventType: 'end'
   result: ovonResult
 
 returnSuccess:

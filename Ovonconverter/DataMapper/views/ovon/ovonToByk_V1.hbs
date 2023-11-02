@@ -1,9 +1,13 @@
 {
     "message": {
-        "authorRole": "end-user",
-        "authorTimestamp": "{{ getDate }}",
         "chatId": "{{ request.ovon.conversation.id}}",
-        "content": "{{ extractMessage request protocolVersion eventType}}"
+        "authorTimestamp": "{{ getDate }}",
+        {{#if (eq type 'message')}}
+            "content": "{{ extractMessage request protocolVersion eventType}}",
+        {{else}}
+            "event": "CLIENT_LEFT_WITH_ACCEPTED",
+        {{/if}}
+        "authorRole": "end-user"
     },
     "endUserTechnicalData": {
         "endUserUrl": "https://dev.buerokratt.ee/",

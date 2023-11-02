@@ -1,7 +1,8 @@
 {
     "ovon": {
         "conversation": {
-            "id": "{{ bykResponse.id }}"
+            "id": "{{ bykResponse.id }}",
+            "cookie": "{{{ cookie }}}"
         },
         "sender": {
             "from": "https://dev.buerokratt.ee"
@@ -9,12 +10,12 @@
         "responseCode" : 200,
         "events": [
             {
-                "eventType": "invite",
+                "eventType": "{{ eventType}}",
                 "parameters": {
                     "to": {
                     "url": "https://dev.buerokratt.ee"
                     },
-                    "lastMessage": "{{ bykResponse.lastMessage }}"
+                    "message": "{{ bykResponse.lastMessage }}"
                 }
             }
         ]
