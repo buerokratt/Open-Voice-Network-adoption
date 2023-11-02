@@ -1,0 +1,12 @@
+{
+    "message": {
+        "authorRole": "end-user",
+        "authorTimestamp": "{{ getDate }}",
+        "chatId": "{{ request.ovon.conversation.id}}",
+        "content": "{{ extractMessage request protocolVersion eventType}}"
+    },
+    "endUserTechnicalData": {
+        "endUserUrl": "https://dev.buerokratt.ee/",
+        "endUserOs": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0"
+    }
+}

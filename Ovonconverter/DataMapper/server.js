@@ -4,6 +4,7 @@ import jsdom from "jsdom";
 const { JSDOM } = jsdom;
 import secrets from "./controllers/secrets.js";
 import fs from "fs";
+import mapper from "./controllers/mapper.js";
 import files from "./controllers/files.js";
 import crypto from "crypto";
 
@@ -49,6 +50,7 @@ app.use(
 app.engine("handlebars", hbs.engine);
 app.set("view engine", "handlebars");
 app.set("views", "./views");
+app.use("/dmapper", mapper)
 app.use("/secrets", secrets);
 app.get("/", (req, res) => {
   res.render("home", { title: "Home" });

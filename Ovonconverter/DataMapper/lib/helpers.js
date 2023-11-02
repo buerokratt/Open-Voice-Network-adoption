@@ -1,4 +1,5 @@
 import Handlebars from 'handlebars';
+import {extractMessageByProtocol} from "../js/helpers/extractMessageByProtocol.js";
 
 Handlebars.registerHelper('toJSON', function(obj) {
     return JSON.stringify(obj);
@@ -6,6 +7,23 @@ Handlebars.registerHelper('toJSON', function(obj) {
 
 Handlebars.registerHelper('eq', function(a, b) {
     return a == b;
+});
+
+Handlebars.registerHelper('extractMessage', function (request, protocolVersion,eventType) {
+    return extractMessageByProtocol(request, protocolVersion, eventType);
+})
+
+Handlebars.registerHelper('getDate', function() {
+    return new Date().toISOString();
+})
+
+Handlebars.registerHelper('isMessage', function(inputValue) {
+    return inputValue === 'message';
+})
+
+Handlebars.registerHelper('checkV', function (request) {
+    console.log('CHECKING THE REQUEST')
+    console.log(request);
 });
 
 Handlebars.registerHelper('assign', function(varName, varValue, options) {

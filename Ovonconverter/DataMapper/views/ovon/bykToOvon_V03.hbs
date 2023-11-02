@@ -1,0 +1,22 @@
+{
+    "ovon": {
+        "conversation": {
+            "id": "{{ bykResponse.id }}"
+        },
+        "sender": {
+            "from": "https://dev.buerokratt.ee"
+        },
+        "responseCode" : 200,
+        "events": [
+            {
+                "eventType": "invite",
+                "parameters": {
+                    "to": {
+                    "url": "https://dev.buerokratt.ee"
+                    },
+                    "lastMessage": "{{ bykResponse.lastMessage }}"
+                }
+            }
+        ]
+    }
+}

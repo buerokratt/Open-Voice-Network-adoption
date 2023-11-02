@@ -4,10 +4,10 @@ import fs from "fs";
 import helpers from "../lib/helpers.js";
 
 // For running on docker:
-const pathToHbs = '/usr/src/app/views/training/'
+const pathToHbs = '/usr/src/app/views/ovon/'
 
 // For running on local:
-// const pathToHbs = "DSL/DataMapper/views/training/";
+// const pathToHbs = "DSL/DataMapper/views/ovon/";
 
 const router = express.Router();
 
