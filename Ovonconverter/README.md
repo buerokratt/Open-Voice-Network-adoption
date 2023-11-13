@@ -27,10 +27,87 @@ Headers:
 
 Included is a html file `test_message.html` which send an AJAX request to Ruuter to demonstrate the conversion of plaintext message to OVON JSON and that to Buerokratt JSON.
 
-## Chat Bot via Rest Api
+### Updating protocol migration
+
+#### To add new version of OVON protocol follow this [guide](OVON_PROTOCOL_MIGRATION.md)
+
+## Chat Bot via (RASA)Rest Api (Responses come with response body of request)
+
+### Short description
+Sending messages to bot with OVON structure type, and get instant response within
+- base url: `https://dev.buerokratt.ee/ovonr`
+- path: `/chat/rasa/ovon`
+- conversation id is unique if for conversation(ID's could be any number, keep in mind that sessions are always active and don't require initialization)
+- event type should be `whisper`
+- Header must have `protocol` key with value of version, currently used `ovon_0.3`
+- And message is something you want to send to the bot.
+Curl example request:
+```
+curl --location 'https://dev.buerokratt.ee/ovonr/chat/rasa/ovon' \
+--header 'protocol: ovon_0.3' \
+--header 'Content-Type: application/json' \
+--data '{
+    "ovon": {
+        "conversation": {
+            "id": 5011
+        },
+        "sender": {
+            "from": "https://someBotThatOfferedTheInvite.com"
+        },
+        "responseCode": 200,
+        "events": [
+            {
+                "eventType": "whisper",
+                "parameters": {
+                    "to": {
+                        "url": "https://someBotThatIsBeingInvited.com"
+                    },
+                    "message": "Nordpool hind hetkel"
+                }
+            }
+        ]
+    }
+}'
+```
+
+Response example:
+
+```
+{
+    "response": {
+        "data": {
+            "ovon": {
+                "conversation": {
+                    "id": "5011",
+                    "cookie": ""
+                },
+                "sender": {
+                    "from": "https://dev.buerokratt.ee"
+                },
+                "responseCode": 200,
+                "events": [
+                    {
+                        "eventType": "whisper",
+                        "parameters": {
+                            "to": {
+                                "url": "https://dev.buerokratt.ee"
+                            },
+                            "message": "Ma ei saanud päris täpselt aru."
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
+```
+- ID: is session that been used for chat
+- MESSAGE : response from bot for last message sent within session
+
+## Chat Bot via Rest Api (Responses come from stream)
 
 #### Short description:
-Communication with bot happens via rest api calls,bot responses come via tex/event-stream where you recieve a stream of data, each JSON within this stream contains entire chat history.
+Communication with bot happens via rest api calls,bot responses via tex/event-stream where you recieve a stream of data, each JSON within this stream contains entire chat history.
 * Base URL for all requests : ` https://dev.buerokratt.ee/ovonr `
 * All post requests must have header providing current OVON protocol version, current base is ` protocol = ovon_0.3 `
 * As request response used OVON min body with small modifications [OVON request/response body](https://github.com/open-voice-network/lib-interop/tree/main/javascript/sample-json/SuperMinSandBox20231018)
