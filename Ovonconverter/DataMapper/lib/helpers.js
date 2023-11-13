@@ -21,11 +21,6 @@ Handlebars.registerHelper('isMessage', function(inputValue) {
     return inputValue === 'message';
 })
 
-Handlebars.registerHelper('checkV', function (request) {
-    console.log('CHECKING THE REQUEST')
-    console.log(request);
-});
-
 Handlebars.registerHelper('assign', function(varName, varValue, options) {
     if (!options.data.root) {
         options.data.root = {};
