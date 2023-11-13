@@ -1,0 +1,86 @@
+assign_values:
+  assign:
+    request: ${incoming.body}
+    protocolVersion: ${incoming.headers.protocol}
+
+convertOvonToByk:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: ovonToBykV1
+  next: ovonToBykV1
+
+ovonToBykV1:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/ovonToByk-V1
+    body:
+      request: ${request}
+      type: "message"
+      eventType: "whisper"
+      protocolVersion: ${incoming.headers.protocol}
+  result: bykRequest
+
+assignSessionId:
+  assign:
+    sessionId: ${bykRequest.response.body.data.message.chatId}
+
+sendMessageToRasa:
+  call: http.post
+  args:
+    url: "[#RASA_URL]:[#RASA_PORT]/conversations/${sessionId}/messages"
+    body:
+      text: ${bykRequest.response.body.data.message.content}
+      sender: "user"
+  result: rasaMessageResult
+
+checkIntent:
+  switch:
+    - condition: ${rasaMessageResult.response.body.latest_message.intent_ranking[0].name.includes('nlu_fallback')}
+      next: createErrorResponse
+  next: getIntentMessage
+
+createErrorResponse:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
+    body:
+      id: ${request.ovon.conversation.id}
+      lastMessage: "Ma ei saanud päris täpselt aru."
+  result: convertedResponse
+  next: convertBykToOvon
+
+getIntentMessage:
+  call: http.post
+  args:
+    url: "[#RASA_URL]:[#RASA_PORT]/conversations/${sessionId}/trigger_intent"
+    body:
+      name: ${rasaMessageResult.response.body.latest_message.intent_ranking[0].name}
+  result: intentResponse
+
+createResponse:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
+    body:
+      id: ${sessionId}
+      lastMessage: ${intentResponse.response.body.messages[0].text}
+  result: convertedResponse
+
+convertBykToOvon:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: bykToOvonV03
+  next: bykToOvonV03
+
+bykToOvonV03:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
+    body:
+      bykResponse: ${convertedResponse.response.body.data}
+      eventType: "whisper"
+  result: ovonResult
+
+returnSuccess:
+  return: ${ovonResult.response.body}
+  next: end
