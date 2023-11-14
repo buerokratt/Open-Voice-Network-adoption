@@ -40,6 +40,7 @@ Sending messages to bot with OVON structure type, and get instant response withi
 - conversation id is unique if for conversation(ID's could be any number, keep in mind that sessions are always active and don't require initialization)
 - event type should be `whisper`
 - Header must have `protocol` key with value of version, currently used `ovon_0.3`
+  - This header define which ovon converter should be used for converting to and from OVON
 - And message is something you want to send to the bot.
 Curl example request:
 ```
@@ -78,8 +79,7 @@ Response example:
         "data": {
             "ovon": {
                 "conversation": {
-                    "id": "5011",
-                    "cookie": ""
+                    "id": "5011"
                 },
                 "sender": {
                     "from": "https://dev.buerokratt.ee"
