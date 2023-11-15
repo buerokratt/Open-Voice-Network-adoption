@@ -101,10 +101,10 @@ for these examples we are using `ovonToByk_V07.hbs` file for mapping that should
 
 3. Converting BYK to OVON
 Need to create mapping file that would properly extract information from BYK response into OVON response.
-We already have [bykToOvon](DataMapper/views/ovon/bykToOvon_V03.hbs)
+We already have [bykToOvon](DataMapper/views/ovon/bykToOvon_V0.3.hbs)
 
 Process is identical as OVON to BYK just reversed, we need to create new mapper .hbs file where you define structure of desired OVON response
-and fill it with necessary information.In example of [bykToOvon](DataMapper/views/ovon/bykToOvon_V03.hbs)
+and fill it with necessary information.In example of [bykToOvon](DataMapper/views/ovon/bykToOvon_V0.3.hbs)
 * Set to 'id' chat id that been used before or we got as response from initial request
 * Cookie is session cookie that been provided by init request and need for any future call for this session
 * event type you can put any text you need to see, currently i used whisper/init/end as inputs, but mainly its text and could bre replaced by any needed text
