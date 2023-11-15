@@ -1,8 +1,31 @@
 ### Implementing conversion from OVON to BYK and vice versa using protocol version
 
 #### Converting OVON to BYK
-Firstly we would need to create mapping file that would properly extract information from OVON request to Buerokratt.
-We already have [ovonToByk](DataMapper/views/ovon/ovonToByk_V1.hbs)
+### Short description
+In order to add new OVON mappings we need to:
+1. Add new version for condition checker in step `convertOvonToByk`.
+2. Add new mapper for OVON to BYK that would convert OVON request into Buerokratt request.
+3. Add new mapper for BYK to OVON that would convert Buerokratt response into OVON response.
+4. Add new version for condition checker in step `convertBykToOvon`.
+
+----------
+
+1. Add conditions for new version into checkers, followed by example, just need to add new condition with following step:
+```
+convertOvonToByk:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: ovonToBykV1
+    - condition: ${protocolVersion.includes('ovon_0.4')}
+      next: ovonToBykV1
+  next: ovonToBykV1
+```
+We should have new condition with `next` that would be triggered when condition is met.
+#### Note that currently we have BYK version one only so this step could be skipped
+
+2. Create mapper for new protocol version `ovonToByk`
+We need to create mapping file that would properly extract information from OVON request and converts it to Buerokratt.
+We already have [ovonToByk](DataMapper/views/ovon/ovonToByk_V1.hbs) so it could be used as an example
 
 ````
 {
@@ -23,18 +46,18 @@ We already have [ovonToByk](DataMapper/views/ovon/ovonToByk_V1.hbs)
 }
 ````
 
-* Need to make similar file with name of the version you intend to use for example ovonToByk_V05.hbs
+* Need to make similar file with name of the version you intend to use for example ovonToByk_V05.hbs in `Datamapper/views/ovon`
 * According to new OVON structure need to provide proper path for 'id'. Currently, its ovo.conversation.id within OVON request
-* Now we need to modify helper script for extracting message from request here [messageExtract](DataMapper/js/helpers/extractMessageByProtocol.js)
+* Now we need to modify helper script for extracting message from request,used script [messageExtract](DataMapper/js/helpers/extractMessageByProtocol.js)
   - Add function to provide route for message with OVON request body
   - Add switch case to include new function for new version processing
 
-Mapping is complete now need to update all DSL steps to process new version 
- [init](DSL/POST/chat/init/ovon.yml)
- [message](DSL/POST/chat/message/ovon.yml)
- [end](DSL/POST/chat/end/ovon.yml)
+Mapping OVON to BYK is complete now need to update all DSL steps to process new version.
+ - [init](DSL/POST/chat/init/ovon.yml) 
+ - [message](DSL/POST/chat/message/ovon.yml) 
+ - [end](DSL/POST/chat/end/ovon.yml) 
 
-There is Step/function call 'convertOvonToByk' that have switch case, you need to add new condition with specific version you want to use,
+There is Step/function call 'convertOvonToByk' that have switch case, need to add new condition with specific version you want to use,
 providing next as a new Step/function that would be triggered for this version.Creating new Step/function
 
 ````
@@ -76,8 +99,8 @@ convertOvonToByk:
 ````
 for these examples we are using `ovonToByk_V07.hbs` file for mapping that should be located in `DataMapper/views/ovon/`
 
-#### Converting BYK to OVON
-Firstly we would need to create mapping file that would properly extract information from OVON request to Buerokratt.
+3. Converting BYK to OVON
+Need to create mapping file that would properly extract information from BYK response into OVON response.
 We already have [bykToOvon](DataMapper/views/ovon/bykToOvon_V03.hbs)
 
 Process is identical as OVON to BYK just reversed, we need to create new mapper .hbs file where you define structure of desired OVON response
@@ -93,3 +116,15 @@ and fill it with necessary information.In example of [bykToOvon](DataMapper/view
 As with converting ovon to byk we need to add/modify these steps same way
 * convertBykToOvon add new condition for new version
 * bykToOvonV07 or any name you plan to use
+
+4. Add condition to add mapping from BYK response to OVON response
+Action are same as in step #1 but reversed
+```
+convertBykToOvon:
+  switch:
+    - condition: ${protocolVersion.includes('ovon_0.3')}
+      next: bykToOvonV03
+    - condition: ${protocolVersion.includes('ovon_0.4')}
+      next: bykToOvonV04
+  next: bykToOvonV03
+```

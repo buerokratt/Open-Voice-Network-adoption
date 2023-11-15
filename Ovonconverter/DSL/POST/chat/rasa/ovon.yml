@@ -7,6 +7,8 @@ convertOvonToByk:
   switch:
     - condition: ${protocolVersion.includes('ovon_0.3')}
       next: ovonToBykV1
+    - condition: ${protocolVersion.includes('ovon_0.4')}
+      next: ovonToBykV1
   next: ovonToBykV1
 
 ovonToBykV1:
@@ -70,12 +72,23 @@ convertBykToOvon:
   switch:
     - condition: ${protocolVersion.includes('ovon_0.3')}
       next: bykToOvonV03
+    - condition: ${protocolVersion.includes('ovon_0.4')}
+      next: bykToOvonV04
   next: bykToOvonV03
 
 bykToOvonV03:
   call: http.post
   args:
     url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
+    body:
+      bykResponse: ${convertedResponse.response.body.data}
+      eventType: "whisper"
+  result: ovonResult
+
+bykToOvonV04:
+  call: http.post
+  args:
+    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V04
     body:
       bykResponse: ${convertedResponse.response.body.data}
       eventType: "whisper"
