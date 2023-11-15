@@ -12,7 +12,7 @@ extractProtocolHeader:
 
 assignProtocolVersion:
   assign:
-    version: ${convertedProtocol.response.body}
+    protocolVersion: ${convertedProtocol.response.body}
 
 convertOvonToByk:
   call: http.post
@@ -22,7 +22,7 @@ convertOvonToByk:
       request: ${request}
       type: "message"
       eventType: "whisper"
-      protocolVersion: ${version}
+      protocolVersion: ${protocolVersion}
   result: bykRequest
 
 assignSessionId:
@@ -74,7 +74,7 @@ createResponse:
 convertBykToOvon:
   call: http.post
   args:
-    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${version}"
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${protocolVersion}"
     body:
       bykResponse: ${convertedResponse.response.body.data}
       eventType: "whisper"

@@ -7,7 +7,7 @@ router.post('/', (req, res) => {
     let result = 'V0.3';
     // converts string with structure of ovon_0.3 to V0.3
     if(protocolVersion !== undefined) {
-        result = 'V' + protocolVersion.split("_")[1];;
+        result = 'V' + protocolVersion.split("_")[1];
     }
     res.json(result);
 });
