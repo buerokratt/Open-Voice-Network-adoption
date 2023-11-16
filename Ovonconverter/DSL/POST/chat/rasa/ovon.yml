@@ -17,7 +17,7 @@ assignProtocolVersion:
 convertOvonToByk:
   call: http.post
   args:
-    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/ovonToByk-${version}"
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/ovonToByk-${protocolVersion}"
     body:
       request: ${request}
       type: "message"

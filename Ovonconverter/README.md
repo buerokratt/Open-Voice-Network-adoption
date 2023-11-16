@@ -34,14 +34,14 @@ Included is a html file `test_message.html` which send an AJAX request to Ruuter
 ## Chat Bot via (RASA)Rest Api (Responses come with response body of request)
 
 ### Short description
-Sending messages to bot with OVON structure type, and get instant response within
-- base url: `https://dev.buerokratt.ee/ovonr`
-- path: `/chat/rasa/ovon`
-- conversation id is unique if for conversation(ID's could be any number, keep in mind that sessions are always active and don't require initialization)
-- event type should be `whisper`
-- Header must have `protocol` key with value of version, currently used `ovon_0.3`
+Sending messages to bot with OVON structure type, and get instant response.
+- Base url: `https://dev.buerokratt.ee/ovonr`
+- Path: `/chat/rasa/ovon`
+- Conversation.id is unique session id for the conversation(ID's could be any number 5000-5050, keep in mind that sessions are always active and don't require initialization)
+- Event type should be `whisper`
+- Header must have `protocol` key with value of version, currently used `ovon_0.4`(Excluded cookie part, since not needed for this type of request)
   - This header define which ovon converter should be used for converting to and from OVON
-- And message is something you want to send to the bot.
+- Message is text that would be sent to the bot.
 Curl example request:
 ```
 curl --location 'https://dev.buerokratt.ee/ovonr/chat/rasa/ovon' \
@@ -63,7 +63,7 @@ curl --location 'https://dev.buerokratt.ee/ovonr/chat/rasa/ovon' \
                     "to": {
                         "url": "https://someBotThatIsBeingInvited.com"
                     },
-                    "message": "Nordpool hind hetkel"
+                    "message": "Kes sa oled?"
                 }
             }
         ]
@@ -79,7 +79,7 @@ Response example:
         "data": {
             "ovon": {
                 "conversation": {
-                    "id": "5011"
+                    "id": "5010"
                 },
                 "sender": {
                     "from": "https://dev.buerokratt.ee"
@@ -101,8 +101,10 @@ Response example:
     }
 }
 ```
-- ID: is session that been used for chat
+- ID: is session that been used for chat(Keep same id if you want to keep same conversation up)
 - MESSAGE : response from bot for last message sent within session
+  - "Ma ei saanud päris täpselt aru." signifies that bot couldnt process the input of user.
+
 
 ## Chat Bot via Rest Api (Responses come from stream)
 
@@ -120,8 +122,8 @@ Communication with bot happens via rest api calls,bot responses via tex/event-st
   - With response, you will get message stating 'Message was sent successfully', this indicator that request worked.
   - Response also would provide USED chatId and cookie, so they could be reused for future calls. 
 * To finish session with the bot use ` /chat/end/ovon ` path
-  - With request body we need to provide chatId and cookie that would conclude chat.
-  - Within response, we will get message 'Chat session is closed'.
+  - With request body, need to provide chatId and cookie that would conclude chat.
+  - Within response, will get message 'Chat session is closed'.
 
 #### API calls examples
 #### 1. ` https://dev.buerokratt.ee/ovonr/chat/init/ovon ` - this would initialize the chat.
@@ -186,7 +188,7 @@ RESPONSE example:
 }
 ``````
 Here is important to save chat id and cookie values for future calls provided in response.data.conversation. id and cookie
-Message within this body is last message sent by bot, but this one could be omitted since all messages could bre recieved with get chat endpoint.
+Message within this body is last message sent by bot, but this one could be omitted since all messages could are received with get chat endpoint.
 
 #### 2. ` https://dev.buerokratt.ee/ovonr/chat/message/ovon ` - this would send message to chat.
 
@@ -220,7 +222,7 @@ curl --location 'http://dev.buerokratt.ee/ovonr/chat/message/ovon' \
     }
 }'
 ``````
-Here we reused necessary information (id, cookie from initial request) to send message 'How are things' to the bot 
+Here we reused necessary information (id, cookie from initial requests response) to send message 'How are things' to the bot 
 
 RESPONSE example: 
 
@@ -253,7 +255,7 @@ RESPONSE example:
     }
 }
 ``````
-This how response should look like.It contains previously (id, cookie) and infromation that message was sent.
+This how response should look like.It contains previously used(id, cookie) and confirmation that message was sent.
 
 #### 3. ` https://dev.buerokratt.ee/ovonr/chat/end/ovon ` - this would end the chat.
 
@@ -287,7 +289,8 @@ curl --location 'http://dev.buerokratt.ee/ovonr/chat/end/ovon' \
 }'
 ``````
 
-We reused same body structure as it was sent to the messaging
+Request contains previously used id, cookie.
+Event type is end.
 
 RESPONSE example:
 
@@ -321,6 +324,8 @@ RESPONSE example:
 }
 ``````
 
+Response contains previously used id, cookie and confirmation that session was closed.
+
 #### 4. ` https://ruuter.dev.buerokratt.ee/pub1/sse/get-new-messages?chatId=&timeRangeBegin= ` - connect to SSE event to listen for bot RESPONSES.
 
 CURL example: 
@@ -330,4 +335,5 @@ curl --location 'https://ruuter.dev.buerokratt.ee/pub1/sse/get-new-messages?chat
 --header 'Cookie: chatJwt=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIiLCJjaGF0SWQiOiIwN2Y1NjRhMy1kZjg1LTRjYmUtYTM5Yy1lM2FiMDk4ZjU3N2UiLCJpc3MiOiJkZXYuYnVlcm9rcmF0dC5lZSIsImZvcndhcmRUbyI6IiIsImV4cCI6MTY5OTAwOTA2MSwiaWF0IjoxNjk5MDAxODYxLCJqdGkiOiJiNjcxN2VhNS01MjRjLTRmMjktODhjZi03MTNjMGQ4ZGUxY2UifQ.GWcr4tRql4yOr-8fOLoppOFmG0fN-uzqevGQkH3yXgNUOrAKjA9mZaiV_99KdmLIShkwY_JAt-Et6dgjhwhUJgz8iKP3ifCX9cezEMsPyNk7lVhE8n99eOZkU4e103zkabAsCmRBwLBFtP18jiOPtECHdu-ha5b2EyIUZQeC32M-551YGQlxAwJbVv0Yyuhu5ndlCtmKM-Or9ffpTI2f2S66dtuF88dAHHGc018uh9MsNaI7ZdH7ZMUHXGxSDQl7w1RMuab9Z-_unrNbZZZofecKfw5kogCqEYeUnX5I7ChwGQpOTJeFF2vvqMAUGOqq1m4ok54CUKHJtVjx8-GlAw'
 ``````
 
-Here we must provide chat id and cookie that we got from initializing chat and also  timeRangeBegin, would be time of chat initialization
+Here we must provide chat id and cookie that we got from initializing chat and also  timeRangeBegin, would be time of chat initialization.
+Then you will get text/stream event connection and every received json would contain chat history.
