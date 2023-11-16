@@ -1,19 +1,24 @@
 assign_values:
   assign:
     request: ${incoming.body}
-    protocolVersion: ${incoming.headers.protocol}
     cookie: ${incoming.headers.cookie}
 
-convertOvonToByk:
-  switch:
-    - condition: ${protocolVersion.includes('ovon_0.3')}
-      next: ovonToBykV1
-  next: ovonToBykV1
-
-ovonToBykV1:
+extractProtocolHeader:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/ovonToByk-V1
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/convert/protocol-header"
+    body:
+      protocol: ${incoming.headers}
+  result: convertedProtocol
+
+assignProtocolVersion:
+  assign:
+    protocolVersion: ${convertedProtocol.response.body}
+
+convertOvonToByk:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/ovonToByk-${protocolVersion}"
     body:
       request: ${request}
       eventType: "whisper"
@@ -34,22 +39,16 @@ sendMessage:
 convertMessageResponse:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
     body:
       id: ${request.ovon.conversation.id}
       lastMessage: ${bykResult.response.body.data.forwarding_validation.data.post_message_to_bot.response}
   result: convertedResponse
 
 convertBykToOvon:
-  switch:
-    - condition: ${protocolVersion.includes('ovon_0.3')}
-      next: bykToOvonV03
-  next: bykToOvonV03
-
-bykToOvonV03:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${protocolVersion}"
     body:
       bykResponse: ${convertedResponse.response.body.data}
       cookie: ${cookie}

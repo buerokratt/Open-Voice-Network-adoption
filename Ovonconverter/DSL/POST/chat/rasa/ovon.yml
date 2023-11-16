@@ -1,25 +1,28 @@
 assign_values:
   assign:
     request: ${incoming.body}
-    protocolVersion: ${incoming.headers.protocol}
 
-convertOvonToByk:
-  switch:
-    - condition: ${protocolVersion.includes('ovon_0.3')}
-      next: ovonToBykV1
-    - condition: ${protocolVersion.includes('ovon_0.4')}
-      next: ovonToBykV1
-  next: ovonToBykV1
-
-ovonToBykV1:
+extractProtocolHeader:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/ovonToByk-V1
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/convert/protocol-header"
+    body:
+      protocol: ${incoming.headers}
+  result: convertedProtocol
+
+assignProtocolVersion:
+  assign:
+    protocolVersion: ${convertedProtocol.response.body}
+
+convertOvonToByk:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/ovonToByk-${protocolVersion}"
     body:
       request: ${request}
       type: "message"
       eventType: "whisper"
-      protocolVersion: ${incoming.headers.protocol}
+      protocolVersion: ${protocolVersion}
   result: bykRequest
 
 assignSessionId:
@@ -44,7 +47,7 @@ checkIntent:
 createErrorResponse:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
     body:
       id: ${request.ovon.conversation.id}
       lastMessage: "Ma ei saanud päris täpselt aru."
@@ -62,33 +65,16 @@ getIntentMessage:
 createResponse:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/bykMessageResponse
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
     body:
       id: ${sessionId}
       lastMessage: ${intentResponse.response.body.messages[0].text}
   result: convertedResponse
 
 convertBykToOvon:
-  switch:
-    - condition: ${protocolVersion.includes('ovon_0.3')}
-      next: bykToOvonV03
-    - condition: ${protocolVersion.includes('ovon_0.4')}
-      next: bykToOvonV04
-  next: bykToOvonV03
-
-bykToOvonV03:
   call: http.post
   args:
-    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V03
-    body:
-      bykResponse: ${convertedResponse.response.body.data}
-      eventType: "whisper"
-  result: ovonResult
-
-bykToOvonV04:
-  call: http.post
-  args:
-    url: http://ovon_dmapper:3000/dmapper/bykToOvon-V04
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${protocolVersion}"
     body:
       bykResponse: ${convertedResponse.response.body.data}
       eventType: "whisper"

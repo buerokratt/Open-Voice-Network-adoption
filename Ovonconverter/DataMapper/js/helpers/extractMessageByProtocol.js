@@ -6,7 +6,8 @@ const extractMessageV03 = (request, eventType) => {
 
 export function extractMessageByProtocol(requestJson, version, eventType) {
     switch(version) {
-        case 'ovon_0.3' :
+        case 'V0.3' :
+        case 'V0.4':
             return extractMessageV03(requestJson, eventType);
         default:
             return extractMessageV03(requestJson, eventType);
