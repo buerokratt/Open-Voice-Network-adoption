@@ -8,6 +8,7 @@ export function extractMessageByProtocol(requestJson, version, eventType) {
     switch(version) {
         case 'V0.3' :
         case 'V0.4':
+        case 'V0.5':
             return extractMessageV03(requestJson, eventType);
         default:
             return extractMessageV03(requestJson, eventType);

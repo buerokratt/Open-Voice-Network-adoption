@@ -13,6 +13,11 @@ Handlebars.registerHelper('extractMessage', function (request, protocolVersion,e
     return extractMessageByProtocol(request, protocolVersion, eventType);
 })
 
+Handlebars.registerHelper('checkSessionId', function (sessionId) {
+    const random4Digit = Math.floor(1000 + Math.random() * 9000);
+    return sessionId == null ? random4Digit : sessionId;
+})
+
 Handlebars.registerHelper('getDate', function() {
     return new Date().toISOString();
 })
