@@ -7,7 +7,7 @@ const extractMessageV03 = (request, eventType) => {
 const extractMessageV05 = (request, eventType) => {
     const events = request.ovon.events;
     const whisperEvent = events.filter(events => events.eventType === eventType);
-    return whisperEvent[0].parameters.dialogEvent.text.tokens[0].value;
+    return whisperEvent[0].parameters.dialogEvent.features.text.tokens[0].value;
 }
 
 export function extractMessageByProtocol(requestJson, version, eventType) {

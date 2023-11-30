@@ -15,12 +15,12 @@ assignProtocolVersion:
   assign:
     protocolVersion: ${convertedProtocol.response.body}
 
-checkNextStep:
+checkEvents:
   switch:
     - condition: ${event === 'invite'}
       next: returnGreeting
     - condition: ${event === 'whisper'}
-      next: returnNothing
+      next: convertOvonToByk
     - condition: ${event === 'utterance'}
       next: convertOvonToByk
     - condition: ${event === 'bye'}
@@ -37,6 +37,13 @@ convertOvonToByk:
       eventType: ${event}
       protocolVersion: ${protocolVersion}
   result: bykRequest
+
+checkNextStep:
+  switch:
+    - condition: ${event === 'whisper'}
+      next: returnNothing
+    - condition: ${event === 'utterance'}
+      next: assignSessionId
 
 assignSessionId:
   assign:
@@ -62,7 +69,7 @@ createErrorResponse:
   args:
     url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
     body:
-      id: ${request.ovon.conversation.id}
+      id: ${sessionId}
       lastMessage: "Ma ei saanud päris täpselt aru."
   result: convertedResponse
   next: convertBykToOvon
