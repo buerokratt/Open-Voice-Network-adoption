@@ -31,6 +31,102 @@ Included is a html file `test_message.html` which send an AJAX request to Ruuter
 
 #### To add new version of OVON protocol follow this [guide](OVON_PROTOCOL_MIGRATION.md)
 
+## Chat Bot using event as key via (RASA)Rest Api (Responses come with response body of request)
+
+### Short description
+Sending messages to bot with OVON structure type, and get instant response.
+- Base url: `https://dev.buerokratt.ee/ovonr`
+- Path: `/conversation`
+- (OPTIONAL)Conversation.id is unique session id for the conversation(ID could be any id, but if it left as null, ID would be generated and response will include this ID)
+- Event type should could be one of the following:
+  - invite (This would send a greeting message as response)
+  - bye (This would send a goodbye message as response)
+  - utterance (This would be processed by bot and response would be sent)
+  - whisper (This wont be sent to the bot but would be processed)
+- Header must have `protocol` key with value of version, currently used `ovon_0.5`(Latest version of structure)
+    - This header define which ovon converter should be used for converting to and from OVON
+- Message is text that would be sent to the bot.
+  Curl example request for utterance event:
+```
+curl --location 'https://dev.buerokratt.ee/ovonr/conversation' \
+--header 'protocol: ovon_0.5' \
+--header 'Content-Type: application/json' \
+--data '{
+    "ovon": {
+        "conversation": {
+            "id": null
+        },
+        "sender": {
+            "from": "https://someBotThatOfferedTheInvite.com"
+        },
+        "responseCode": 200,
+        "events": [
+            {
+                "eventType": "utterance",
+                "parameters": {
+                    "dialogEvent": {
+                        "speakerId": "bykbot",
+                        "span": { "startTime": "2023-06-14 02:06:07+00:00" },
+                        "features": {
+                            "text": {
+                                "mimeType": "text/plain",
+                                "tokens": [ { "value": "Nice to meet you Ms SomeBot."  } ]
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}'
+```
+
+Response example:
+
+```
+{
+    "response": {
+        "data": {
+            "ovon": {
+                "conversation": {
+                    "id": "9261"
+                },
+                "sender": {
+                    "from": "https://dev.buerokratt.ee"
+                },
+                "responseCode": 200,
+                "events": [
+                    {
+                        "eventType": "utterance",
+                        "parameters": {
+                            "dialogEvent": {
+                                "speakerId": "bykbot",
+                                "span": {
+                                    "startTime": "2023-11-30T10:19:04.433Z"
+                                },
+                                "features": {
+                                    "text": {
+                                        "mimeType": "text/plain",
+                                        "tokens": [
+                                            {
+                                                "value": "Ma ei saanud päris täpselt aru."
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
+```
+- ID: is session that been used for chat(Generated if not provided initially)
+- MESSAGE : response from bot for last message sent within session
+    - "Ma ei saanud päris täpselt aru." signifies that bot couldn't understand the input of user.
+
 ## Chat Bot via (RASA)Rest Api (Responses come with response body of request)
 
 ### Short description

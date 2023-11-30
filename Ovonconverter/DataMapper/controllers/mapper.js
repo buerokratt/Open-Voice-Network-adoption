@@ -12,7 +12,7 @@ const pathToHbs = '/usr/src/app/views/ovon/'
 const router = express.Router();
 
 router.post('/:filename', function(req, res) {
-    // console.log("INCOMING: \n - - - - - - \n" + JSON.stringify(req.body) + "\n - - - - - - \n");
+    console.log("INCOMING: " + req.url + "\n - - - - - - \n" + JSON.stringify(req.body, null, 3) + "\n - - - - - - \n");
     const { filename } = req.params;
     const type = req.header('type');
     const file = fs.readFileSync(pathToHbs + filename.replace(/-/g, '_') + '.hbs', 'utf8');
