@@ -15,15 +15,23 @@ assignProtocolVersion:
   assign:
     protocolVersion: ${convertedProtocol.response.body}
 
+controlEvent:
+  call: http.post
+  args:
+    url: "[#TRAINING_DMAPPER]:[#TRAINING_DMAPPER_PORT]/dmapper/controlEvent"
+    body:
+      req: ${request}
+  result: eventType
+
 checkEvents:
   switch:
-    - condition: ${event === 'invite'}
+    - condition: ${eventType === 'invite'}
       next: returnGreeting
-    - condition: ${event === 'whisper'}
+    - condition: ${eventType === 'whisper'}
       next: convertOvonToByk
-    - condition: ${event === 'utterance'}
+    - condition: ${eventType === 'utterance'}
       next: convertOvonToByk
-    - condition: ${event === 'bye'}
+    - condition: ${eventType === 'bye'}
       next: returnGoodBye
   next: returnError
 
