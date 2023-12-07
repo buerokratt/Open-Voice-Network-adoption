@@ -6,7 +6,7 @@ assign_values:
 controlEvent:
   call: http.post
   args:
-    url: "[#TRAINING_DMAPPER]:[#TRAINING_DMAPPER_PORT]/dmapper/controlEvent"
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/controlEvent"
     body:
       req: ${request}
   result: eventTypeResponse

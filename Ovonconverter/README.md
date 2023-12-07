@@ -39,45 +39,62 @@ Sending messages to bot with OVON structure type, and get instant response.
 - Path: `/conversation`
 - (OPTIONAL)Conversation.id is unique session id for the conversation(ID could be any id, but if it left as null, ID would be generated and response will include this ID)
 - Event type should could be one of the following:
-  - invite (This would send a greeting message as response)
-  - bye (This would send a goodbye message as response)
+  - invite (This would send a greeting message)
+  - bye (This would send a goodbye message)
   - utterance (This would be processed by bot and response would be sent)
-  - whisper (This wont be sent to the bot but would be processed)
-- Header must have `protocol` key with value of version, currently used `ovon_0.5`(Latest version of structure)
-    - This header define which ovon converter should be used for converting to and from OVON
+  - whisper (Used as additional metadata, and its value might be evaluated by bot of deemed necessary)
+- Amount of events might be more than one but then they would be processed by priority from highest to lowest
+  - invite
+  - bye
+  - utterance
+  - whisper
+- Structure of request and response are depending on version, currently used defined `schema:version` within request body as deciding factor
 - Message is text that would be sent to the bot.
   Curl example request for utterance event:
 ```
 curl --location 'https://dev.buerokratt.ee/ovonr/conversation' \
---header 'protocol: ovon_0.5' \
 --header 'Content-Type: application/json' \
 --data '{
-    "ovon": {
-        "conversation": {
-            "id": null
-        },
-        "sender": {
-            "from": "https://someBotThatOfferedTheInvite.com"
-        },
-        "responseCode": 200,
-        "events": [
-            {
-                "eventType": "utterance",
-                "parameters": {
-                    "dialogEvent": {
-                        "speakerId": "bykbot",
-                        "span": { "startTime": "2023-06-14 02:06:07+00:00" },
-                        "features": {
-                            "text": {
-                                "mimeType": "text/plain",
-                                "tokens": [ { "value": "Nice to meet you Ms SomeBot."  } ]
-                            }
-                        }
-                    }
-                }
+  "ovon": {
+    "schema": {
+      "version": "1.0.1",
+      "url": "https://openvoicenetwork.org/schema/dialog-envelope.json"
+    },
+    "conversation": {
+      "id": "conv_1701940298011"
+    },
+    "sender": {
+      "from": "https://organization_url_from",
+      "reply-to": "https://organization_url_to"
+    },
+    "responseCode": {
+      "code": 200,
+      "description": "OK"
+    },
+    "events": [
+      {
+        "eventType": "utterance",
+        "parameters": {
+          "dialogEvent": {
+            "speakerId": "humanOrAssistantID",
+            "span": {
+              "startTime": "2023-12-07T09:11:38.011Z"
+            },
+            "features": {
+              "text": {
+                "mimeType": "text/plain",
+                "tokens": [
+                  {
+                    "value": "Tere, kes sa oled"
+                  }
+                ]
+              }
             }
-        ]
-    }
+          }
+        }
+      }
+    ]
+  }
 }'
 ```
 
