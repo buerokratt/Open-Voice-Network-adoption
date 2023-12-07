@@ -13,9 +13,27 @@ Handlebars.registerHelper('extractMessage', function (request, protocolVersion,e
     return extractMessageByProtocol(request, protocolVersion, eventType);
 })
 
+Handlebars.registerHelper('checkEvent', function(request) {
+    const events = request.ovon.events.map(e => e.eventType);
+    if(events.includes('invite')) {
+        return 'invite';
+    }
+    if (events.includes('bye')) {
+        return 'bye';
+    }
+    if(events.includes('utterance')) {
+        return 'utterance';
+    }
+    return 'whisper';
+})
+
 Handlebars.registerHelper('checkSessionId', function (sessionId) {
     const random4Digit = Math.floor(1000 + Math.random() * 9000);
     return sessionId == null ? random4Digit : sessionId;
+})
+
+Handlebars.registerHelper('extractEvent', function (request, protocolVersion,eventType) {
+    return extractEventByProtocol(request, protocolVersion, eventType);
 })
 
 Handlebars.registerHelper('getDate', function() {
