@@ -1,19 +1,7 @@
 assign_values:
   assign:
     request: ${incoming.body}
-    event: ${incoming.body.ovon.events[0].eventType}
-
-extractProtocolHeader:
-  call: http.post
-  args:
-    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/convert/protocol-header"
-    body:
-      protocol: ${incoming.headers}
-  result: convertedProtocol
-
-assignProtocolVersion:
-  assign:
-    protocolVersion: ${convertedProtocol.response.body}
+    protocolVersion: 'V${incoming.body.ovon.schema.version}'
 
 controlEvent:
   call: http.post
@@ -21,19 +9,45 @@ controlEvent:
     url: "[#TRAINING_DMAPPER]:[#TRAINING_DMAPPER_PORT]/dmapper/controlEvent"
     body:
       req: ${request}
-  result: eventType
+  result: eventTypeResponse
+  next: assignEventType
+
+assignEventType:
+  assign:
+    eventType: ${eventTypeResponse.response.body.data}
 
 checkEvents:
   switch:
     - condition: ${eventType === 'invite'}
-      next: returnGreeting
+      next: createInviteMessage
     - condition: ${eventType === 'whisper'}
       next: convertOvonToByk
     - condition: ${eventType === 'utterance'}
       next: convertOvonToByk
     - condition: ${eventType === 'bye'}
-      next: returnGoodBye
+      next: createByeMessage
   next: returnError
+
+createByeMessage:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
+    body:
+      id: ${request.ovon.conversation.id}
+      lastMessage: "Goodbye!"
+  result: convertedResponse
+  next: convertBykToOvon
+
+createInviteMessage:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
+    body:
+      id: ${request.ovon.conversation.id}
+      lastMessage: "Hello! How may i help you?"
+  result: convertedResponse
+  next: convertBykToOvon
+
 
 convertOvonToByk:
   call: http.post
@@ -42,15 +56,15 @@ convertOvonToByk:
     body:
       request: ${request}
       type: "message"
-      eventType: ${event}
+      eventType: ${eventType}
       protocolVersion: ${protocolVersion}
   result: bykRequest
 
 checkNextStep:
   switch:
-    - condition: ${event === 'whisper'}
+    - condition: ${eventType === 'whisper'}
       next: returnNothing
-    - condition: ${event === 'utterance'}
+    - condition: ${eventType === 'utterance'}
       next: assignSessionId
 
 assignSessionId:
@@ -105,19 +119,11 @@ convertBykToOvon:
     url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${protocolVersion}"
     body:
       bykResponse: ${convertedResponse.response.body.data}
-      eventType: ${event}
+      eventType: 'utterance'
   result: ovonResult
 
 returnSuccess:
   return: ${ovonResult.response.body}
-  next: end
-
-returnGoodBye:
-  return: "Goodbye! It was a pleasure helping you. If you have any more questions in the future, feel free to ask. Have a fantastic day!"
-  next: end
-
-returnGreeting:
-  return: "Hello! I hope you're having a wonderful day. It's great to see you here. How can I assist you today?"
   next: end
 
 returnError:

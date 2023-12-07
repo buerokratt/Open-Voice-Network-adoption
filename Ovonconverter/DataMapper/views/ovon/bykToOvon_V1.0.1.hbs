@@ -1,0 +1,28 @@
+{
+    "ovon": {
+    "conversation": {
+        "id": "{{ bykResponse.id }}"
+    },
+    "sender": {
+        "from": "https://dev.buerokratt.ee"
+    },
+    "responseCode" : 200,
+    "events": [
+        {
+            "eventType": "{{ eventType }}",
+            "parameters": {
+                "dialogEvent": {
+                    "speakerId": "bykbot",
+                    "span": { "startTime": "{{ getDate }}" },
+                "features": {
+                    "text": {
+                    "mimeType": "text/plain",
+                    "tokens": [ { "value": "{{ bykResponse.lastMessage }}" } ]
+                    }
+                }
+            }
+        }
+    }
+    ]
+    }
+}

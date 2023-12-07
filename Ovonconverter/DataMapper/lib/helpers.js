@@ -17,9 +17,11 @@ Handlebars.registerHelper('checkEvent', function(request) {
     const events = request.ovon.events.map(e => e.eventType);
     if(events.includes('invite')) {
         return 'invite';
-    } else if (events.includes('bye')) {
+    }
+    if (events.includes('bye')) {
         return 'bye';
-    } else if(events.includes('utterance')) {
+    }
+    if(events.includes('utterance')) {
         return 'utterance';
     }
     return 'whisper';
@@ -28,6 +30,10 @@ Handlebars.registerHelper('checkEvent', function(request) {
 Handlebars.registerHelper('checkSessionId', function (sessionId) {
     const random4Digit = Math.floor(1000 + Math.random() * 9000);
     return sessionId == null ? random4Digit : sessionId;
+})
+
+Handlebars.registerHelper('extractEvent', function (request, protocolVersion,eventType) {
+    return extractEventByProtocol(request, protocolVersion, eventType);
 })
 
 Handlebars.registerHelper('getDate', function() {
