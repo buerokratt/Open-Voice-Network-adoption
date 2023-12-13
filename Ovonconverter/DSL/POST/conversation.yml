@@ -1,7 +1,8 @@
 assign_values:
   assign:
     request: ${incoming.body}
-    protocolVersion: 'V${incoming.body.ovon.schema.version}'
+    protocolVersion: 'V0.9.0'
+    schema: ${incoming.body.ovon.schema}
 
 controlEvent:
   call: http.post
@@ -120,10 +121,13 @@ convertBykToOvon:
     body:
       bykResponse: ${convertedResponse.response.body.data}
       eventType: 'utterance'
+      schemaVersion: ${schema.version}
+      schemaUrl: ${schema.url}
   result: ovonResult
 
 returnSuccess:
-  return: ${ovonResult.response.body}
+  wrapper: false
+  return: ${ovonResult.response.body.data}
   next: end
 
 returnError:
@@ -131,6 +135,7 @@ returnError:
   next: end
 
 returnNothing:
+  wrapper: false
   return: ""
   status: 200
   next: end
