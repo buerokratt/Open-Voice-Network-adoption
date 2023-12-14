@@ -3,6 +3,7 @@ assign_values:
     request: ${incoming.body}
     protocolVersion: 'V0.9.0'
     schema: ${incoming.body.ovon.schema}
+    speakerId: "null"
 
 controlEvent:
   call: http.post
@@ -64,7 +65,7 @@ convertOvonToByk:
 checkNextStep:
   switch:
     - condition: ${eventType === 'whisper'}
-      next: returnNothing
+      next: convertEmptyBykToOvon
     - condition: ${eventType === 'utterance'}
       next: assignSessionId
 
@@ -123,7 +124,24 @@ convertBykToOvon:
       eventType: 'utterance'
       schemaVersion: ${schema.version}
       schemaUrl: ${schema.url}
+      sender: ${request.ovon.sender.from}
+      speakerId: ${speakerId}
   result: ovonResult
+  next: returnSuccess
+
+convertEmptyBykToOvon:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${protocolVersion}"
+    body:
+      bykResponse: "{'bykResponse': {'lastMessage':'', 'id': '0000'}"
+      eventType: 'utterance'
+      schemaVersion: ${schema.version}
+      schemaUrl: ${schema.url}
+      sender: ${request.ovon.sender.from}
+      speakerId: ${speakerId}
+  result: ovonResult
+  next: returnSuccess
 
 returnSuccess:
   wrapper: false
