@@ -1,14 +1,14 @@
 {
     "ovon": {
+    "conversation": {
+        "id": "{{ bykResponse.id }}"
+    },
     "schema": {
     "version": "{{ schemaVersion }}",
     "url": "{{ schemaUrl }}"
     },
-    "conversation": {
-        "id": "{{ bykResponse.id }}"
-    },
     "sender": {
-        "from": "https://dev.buerokratt.ee"
+        "from": "{{ sender }}"
     },
     "responseCode" : 200,
     "events": [
@@ -16,7 +16,7 @@
             "eventType": "{{ eventType }}",
             "parameters": {
                 "dialogEvent": {
-                    "speakerId": "bykbot",
+                    "speakerId": "{{ speakerId }}",
                     "span": { "startTime": "{{ getDate }}" },
                 "features": {
                     "text": {
