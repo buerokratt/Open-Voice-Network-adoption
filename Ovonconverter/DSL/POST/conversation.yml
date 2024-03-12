@@ -50,7 +50,6 @@ createInviteMessage:
   result: convertedResponse
   next: convertBykToOvon
 
-
 convertOvonToByk:
   call: http.post
   args:
@@ -98,6 +97,65 @@ createErrorResponse:
   result: convertedResponse
   next: convertBykToOvon
 
+#contactSmartLibrary:
+#  call: http.post
+#  args:
+#    url: "[#OVON_RUUTER]/external/smart-library"
+#    body:
+#      incoming: ${incoming}
+#  result: ovonResult
+#  next: returnSuccess
+
+#createTempResponse:
+#  call: http.post
+#  args:
+#    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
+#    body:
+#      id: ${sessionId}
+#      lastMessage: 'The Harry Potter series is written by J.K. Rowling. J.K. Rowling is a British author, philanthropist, film producer, television producer, and television writer. She is best known as the author of the Harry Potter fantasy series, which has sold over 500 million copies worldwide, making her a global household name. Additionally, Rowling has joined the rare echelon of authors who have achieved theImpac'
+#  result: convertedResponse
+#  next: convertBykToOvon
+
+#createBookResponse:
+#  call: http.post
+#  args:
+#    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/request/library"
+#    body:
+#      ovon:
+#        schema:
+#          version: 0.9.0
+#          url: not_published_yet
+#        conversation:
+#          id: conv_17019402980222
+#        sender:
+#          from: Human
+#        responseCode:
+#          code: 200
+#          description: OK
+#        events:
+#          - eventType: utterance
+#            parameters:
+#              dialogEvent:
+#                speakerId: humanOrAssistantID
+#                span:
+#                  startTime: '2023-12-07T09:11:38.011Z'
+#                features:
+#                  text:
+#                    mimeType: text/plain
+#                    tokens:
+#                      - value: Who wrote Harry Potter
+#  result: convertedResponse
+#  next: checkEntity
+
+#getBookIntentMessage:
+#  call: http.post
+#  args:
+#    url: "[#RASA_URL]:[#RASA_PORT]/conversations/${sessionId}/trigger_intent"
+#    body:
+#      name: ${rasaMessageResult.response.body.latest_message.intent_ranking[0].name}
+#  result: bookIntentResponse
+#  next: checkEntity
+
 getIntentMessage:
   call: http.post
   args:
@@ -105,6 +163,56 @@ getIntentMessage:
     body:
       name: ${rasaMessageResult.response.body.latest_message.intent_ranking[0].name}
   result: intentResponse
+#  next: checkEntity
+
+checkBookIntent:
+  switch:
+    - condition: ${rasaMessageResult.response.body.latest_message.intent_ranking[0].name.includes('book')}
+      next: createBookResponse
+  next: createResponse
+
+createBookResponse:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
+    body:
+      id: ${sessionId}
+      lastMessage: ${rasaMessageResult.response.body.latest_message.text}
+  result: convertedResponse
+
+convertBookBykToOvon:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykToOvon-${protocolVersion}"
+    body:
+      bykResponse: ${convertedResponse.response.body.data}
+      eventType: 'utterance'
+      schemaVersion: ${schema.version}
+      schemaUrl: ${schema.url}
+      sender: ${request.ovon.sender.from}
+      speakerId: ${speakerId}
+  result: ovonResult
+
+connectSmartLibrary:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/request/library"
+    body:
+      ovon: ${ovonResult.response.body.data.ovon}
+    headers:
+      content-type: "application/json"
+  result: libraryResponse
+  next: createBookTexResponse
+
+createBookTexResponse:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/bykMessageResponse"
+    body:
+      id: ${sessionId}
+      lastMessage: ${JSON.parse(libraryResponse.response.body).ovon.events[0].parameters.dialogEvent.features.text.tokens[0].value}
+  result: convertedResponse
+  next: convertBykToOvon
 
 createResponse:
   call: http.post
@@ -148,6 +256,11 @@ returnSuccess:
   return: ${ovonResult.response.body.data}
   next: end
 
+returnBook:
+  wrapper: false
+  return: ${JSON.parse(libraryResponse.response.body).ovon.events[0].parameters.dialogEvent.features.text.tokens[0].value}
+  next: end
+
 returnError:
   return: "Sorry couldn't find proper event type, please make sure request is correct."
   next: end
@@ -157,3 +270,13 @@ returnNothing:
   return: ""
   status: 200
   next: end
+
+checkEntity:
+  call: http.post
+  args:
+    url: "[#DMAPPER_URL]:[#DMAPPER_PORT]/dmapper/checkV"
+    body:
+      hits: ${rasaMessageResult.response.body.latest_message.text}
+#      hits: ${intentResponse.response.body}
+#      hits: ${libraryResponse}
+  result: convertedResponse
