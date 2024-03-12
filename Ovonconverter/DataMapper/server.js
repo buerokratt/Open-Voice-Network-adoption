@@ -21,6 +21,7 @@ import * as helpers from "./lib/helpers.js";
 import ovonConvert from './lib/ovon.js';
 import stringSplit from "./js/util/stringSplit.js";
 import convertProtocolHeader from "./js/helpers/convertProtocolHeader.js";
+import libraryRequest from "./js/request/library-request.js";
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -55,6 +56,8 @@ app.set("views", "./views");
 app.use("/dmapper", mapper);
 app.use('/convert/string/split', stringSplit)
 app.use('/convert/protocol-header', convertProtocolHeader)
+app.use('/request/library', libraryRequest)
+app.use('/extract/event', convertProtocolHeader)
 app.use("/secrets", secrets);
 app.get("/", (req, res) => {
   res.render("home", { title: "Home" });
