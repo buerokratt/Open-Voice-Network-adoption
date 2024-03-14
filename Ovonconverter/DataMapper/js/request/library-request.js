@@ -18,9 +18,11 @@ router.post('/', (req, res) => {
     fetch(url, requestOptions)
         .then((response) => {
             response.text().then((text) => {
-                console.log('LIBRARY RESPONSE: ')
-                console.log(JSON.stringify(text))
-                res.json(JSON.parse(JSON.stringify(text)));
+                const valueRegex = /"value":"((?:\\.|[^"\\])*)"/;
+                const match = JSON.parse(JSON.stringify(text)).match(valueRegex);
+                const value = match ? match[1] : null;
+                const answer = value.replaceAll('\\"','').replaceAll('\\','');
+                res.json(answer);
             });
         })
         .then((data) => {
